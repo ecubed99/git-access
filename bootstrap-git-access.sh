@@ -22,7 +22,7 @@ Options:
   --private-repo NAME      Private repo containing the real setup script. Default: ${PRIVATE_REPO}
   --private-script PATH    Script path inside private repo. Default: ${PRIVATE_SCRIPT_PATH}
   --ssh-key PATH           SSH private key path. Default: ${SSH_KEY_PATH}
-  --no-run                 Download the private script, but do not run it.
+  --no-run                 Do not download or run the private script.
   -h, --help               Show this help.
 
 Environment variables are also supported:
@@ -207,12 +207,12 @@ main() {
   ensure_github_auth
   ensure_ssh_key
 
-  local private_script
-  private_script="$(download_private_script)"
-
-  log "Private script downloaded to ${private_script}"
-
   if [[ "$RUN_PRIVATE_SCRIPT" == "yes" ]]; then
+    local private_script
+    private_script="$(download_private_script)"
+
+    log "Private script downloaded to ${private_script}"
+
     log "Running private setup script"
     GITHUB_OWNER="$GITHUB_OWNER" \
     PRIVATE_REPO="$PRIVATE_REPO" \
