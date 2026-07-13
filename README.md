@@ -20,22 +20,14 @@ This repo contains only the minimal setup needed to authenticate with GitHub and
 
 ### Git access only
 
-This is the default behavior.
-
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash
-```
-
-Equivalent explicit form:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash -s -- --git-only
+curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash -s -- --no-run 
 ```
 
 ### Git access + full private setup
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash -s -- --full
+curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash
 ```
 
 This installs Git/GitHub access first, then downloads and runs:
@@ -50,9 +42,8 @@ ecubed99/setup_files/setup-new-machine.sh
 Usage: bootstrap-git-access.sh [mode] [options]
 
 Modes:
-  --git-only, git-only      Install Git/GitHub access only. This is the default.
-  --full, full              Install Git/GitHub access, then download and run the private setup script.
-
+  --git-only                  Install Git/GitHub access only. 
+  
 Options:
   --owner NAME              GitHub owner/user/org. Default: ecubed99
   --private-repo NAME       Private repo containing the real setup script. Default: setup_files
@@ -66,17 +57,26 @@ Options:
 Run the full setup using defaults:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash -s -- --full
+curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash 
 ```
 
 Use a different private repo name:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash -s -- --full --private-repo my_private_setup
+curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash -s -- --private-repo my_private_setup
 ```
 
 Use a different SSH key path:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash -s -- --git-only --ssh-key ~/.ssh/id_ed25519_github
+```
+
+Use a completely different account and repo setup:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash -s -- \
+    --owner your_git_account \
+    --private-repo your_source_repo \
+    --private-script your_setup_script
 ```
