@@ -52,7 +52,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 log() {
-  printf '\n==> %s\n' "$*"
+  # Send progress messages to stderr so functions can safely return data on stdout.
+  printf '\n==> %s\n' "$*" >&2
 }
 
 require_command() {
@@ -111,13 +112,27 @@ ensure_github_auth() {
   if gh auth status >/dev/null 2>&1; then
     echo "Already authenticated with GitHub."
   else
-    echo "A browser-based GitHub login will start now."
-    echo "Requesting repo scope so the private setup repo can be downloaded."
-    gh auth login --git-protocol ssh --scopes repo
+    echo "GitHub device authentication will start now."
+    echo "Copy the one-time code, then open the printed URL on another device."
+    echo "Requesting access to the private setup repo and SSH public keys."
+    # Feed the Enter prompt automatically and use echo as the browser command so
+    # remote shells print the device-login URL instead of trying to launch a browser.
+    printf '\n' | GH_BROWSER=echo gh auth login \
+      --hostname github.com \
+      --git-protocol ssh \
+      --skip-ssh-key \
+      --scopes repo,admin:public_key
   fi
 
-  # Ensure the authenticated token can read private repos.
-  gh auth refresh --scopes repo >/dev/null 2>&1 || true
+  # Private-repo reads need repo. Managing account SSH keys additionally needs
+  # admin:public_key. Refresh only when the key API shows that scope is missing.
+  if ! gh api user/keys --silent >/dev/null 2>&1; then
+    echo "GitHub authorization needs permission to manage SSH public keys."
+    echo "Copy the one-time code, then open the printed URL on another device."
+    printf '\n' | GH_BROWSER=echo gh auth refresh \
+      --hostname github.com \
+      --scopes repo,admin:public_key
+  fi
 }
 
 ensure_ssh_key() {
@@ -149,9 +164,27 @@ ensure_ssh_key() {
     gh ssh-key add "${SSH_KEY_PATH}.pub" --title "$(hostname)-$(date +%Y-%m-%d)"
   fi
 
+  touch "$HOME/.ssh/known_hosts"
   ssh-keyscan -t rsa,ecdsa,ed25519 github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null || true
   sort -u "$HOME/.ssh/known_hosts" -o "$HOME/.ssh/known_hosts" 2>/dev/null || true
-  chmod 600 "$HOME/.ssh/known_hosts" 2>/dev/null || true
+  chmod 600 "$HOME/.ssh/known_hosts"
+
+  log "Testing SSH access to GitHub"
+  local ssh_output
+  local ssh_status
+  set +e
+  ssh_output="$(ssh -T -o BatchMode=yes git@github.com 2>&1)"
+  ssh_status=$?
+  set -e
+
+  # GitHub intentionally returns status 1 after successful authentication.
+  if [[ $ssh_status -eq 1 && "$ssh_output" == *"successfully authenticated"* ]]; then
+    echo "$ssh_output"
+  else
+    echo "$ssh_output" >&2
+    echo "SSH authentication to GitHub failed." >&2
+    exit 1
+  fi
 }
 
 download_private_script() {
