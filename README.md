@@ -49,6 +49,7 @@ Options:
   --private-repo NAME       Private repo containing the real setup script. Default: setup_files
   --private-script PATH     Script path inside private repo. Default: setup-new-machine.sh
   --ssh-key PATH            SSH private key path. Default: ~/.ssh/id_ed25519
+  --ssh-key-name NAME       Descriptive name shown in github
   -h, --help                Show help.
 ```
 
@@ -58,6 +59,12 @@ Run the full setup using defaults:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash 
+```
+
+Use a custom ssh key name
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash -s -- --ssh-key-name KEYNAME
 ```
 
 Use a different private repo name:
