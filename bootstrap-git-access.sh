@@ -160,7 +160,7 @@ ensure_ssh_key() {
   if gh ssh-key list 2>/dev/null | grep -q "$public_key"; then
     echo "SSH public key is already uploaded to GitHub."
   else
-    gh ssh-key add "${SSH_KEY_PATH}.pub" --title "{SSH_KEY_NAME}"
+    gh ssh-key add "${SSH_KEY_PATH}.pub" --title "${SSH_KEY_NAME}"
   fi
 
   touch "$HOME/.ssh/known_hosts"
