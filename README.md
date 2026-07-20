@@ -18,6 +18,12 @@ This repo contains only the minimal setup needed to authenticate with GitHub and
 
 ## Usage
 
+### ecubed99's most used (add key name after pasting)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ecubed99/git-access/main/bootstrap-git-access.sh | bash -s -- --ssh-key-name 
+```
+
 ### Git access only
 
 ```bash
