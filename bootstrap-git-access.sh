@@ -11,6 +11,7 @@ GITHUB_OWNER="${GITHUB_OWNER:-ecubed99}"
 PRIVATE_REPO="${PRIVATE_REPO:-setup_files}"
 PRIVATE_SCRIPT_PATH="${PRIVATE_SCRIPT_PATH:-setup-new-machine.sh}"
 SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/id_ed25519}"
+SSH_KEY_NAME="${SSH_KEY_NAME:-$(hostname)-$(date +%Y-%m-%d)}"
 RUN_PRIVATE_SCRIPT="${RUN_PRIVATE_SCRIPT:-yes}"
 
 usage() {
@@ -22,11 +23,12 @@ Options:
   --private-repo NAME      Private repo containing the real setup script. Default: ${PRIVATE_REPO}
   --private-script PATH    Script path inside private repo. Default: ${PRIVATE_SCRIPT_PATH}
   --ssh-key PATH           SSH private key path. Default: ${SSH_KEY_PATH}
+  --ssh-key-name NAME      Descriptive name shown in GitHub. Default: ${SSH_KEY_NAME}
   --no-run                 Do not download or run the private script.
   -h, --help               Show this help.
 
 Environment variables are also supported:
-  GITHUB_OWNER, PRIVATE_REPO, PRIVATE_SCRIPT_PATH, SSH_KEY_PATH, RUN_PRIVATE_SCRIPT
+  GITHUB_OWNER, PRIVATE_REPO, PRIVATE_SCRIPT_PATH, SSH_KEY_PATH, SSH_KEY_NAME, RUN_PRIVATE_SCRIPT
 USAGE
 }
 
@@ -40,6 +42,8 @@ while [[ $# -gt 0 ]]; do
       PRIVATE_SCRIPT_PATH="$2"; shift 2 ;;
     --ssh-key)
       SSH_KEY_PATH="$2"; shift 2 ;;
+    --ssh-key-name)
+      SSH_KEY_NAME="$2"; shift 2 ;;
     --no-run)
       RUN_PRIVATE_SCRIPT="no"; shift ;;
     -h|--help)
@@ -137,7 +141,7 @@ ensure_ssh_key() {
 
   if [[ ! -f "${SSH_KEY_PATH}" ]]; then
     ssh-keygen -t ed25519 \
-      -C "${GITHUB_OWNER}@$(hostname)-$(date +%Y%m%d)" \
+      -C "${GITHUB_OWNER}@${SSH_KEY_NAME}" \
       -f "${SSH_KEY_PATH}" \
       -N ""
   else
@@ -156,7 +160,7 @@ ensure_ssh_key() {
   if gh ssh-key list 2>/dev/null | grep -q "$public_key"; then
     echo "SSH public key is already uploaded to GitHub."
   else
-    gh ssh-key add "${SSH_KEY_PATH}.pub" --title "$(hostname)-$(date +%Y-%m-%d)"
+    gh ssh-key add "${SSH_KEY_PATH}.pub" --title "{SSH_KEY_NAME}"
   fi
 
   touch "$HOME/.ssh/known_hosts"
